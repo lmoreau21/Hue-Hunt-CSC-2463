@@ -211,6 +211,8 @@ function draw() {
       roundOver = false;
       //buttonPressed();
       isPressed = true;
+      Tone.Transport.start();
+      Tone.start();
       //console.log("Start")
     }else if(!isPressed&&keyIsDown(ENTER)){
       //console.log("press"+timer+isPressed);
