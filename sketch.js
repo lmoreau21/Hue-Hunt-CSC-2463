@@ -84,7 +84,7 @@ const notes =  [
   "E4", "D4", "E4", "F4", "G4", "E4", "C4", "D4", "E4",
   "E4", "D4", "E4", "F4", "G4", "E4", "C4", "D4", "E4"
 ];
-const bugSound = ["C4", "D#4", "F#4", "A4"];
+// const bugSound = ["C4", "D#4", "F#4", "A4"];
 const titleScreenNotes = [
   "C3", "E3", "G3", "C4", "E4", "G4", "C5", "E5", "G5",
   "C3", "F3", "A3", "C4", "F4", "A4", "C5", "F5", "A5",
@@ -104,14 +104,14 @@ const reverb = new Tone.Reverb(1.5).toDestination();
 let durationS = .22;
 let curSound, gamesynth;
 let index = 0;
-let bugSeq =  new Tone.Sequence((time, note) => {
-  index++;
-  gamesynth.triggerAttackRelease(note, ".1", time);
-  if(index>=bugSound.length){
-    index=0;
-    bugSeq.stop();
-  }
-}, bugSound, ".1");
+// let bugSeq =  new Tone.Sequence((time, note) => {
+//   index++;
+//   gamesynth.triggerAttackRelease(note, ".1", time);
+//   if(index>=bugSound.length){
+//     index=0;
+//     bugSeq.stop();
+//   }
+// }, bugSound, ".1");
 
 const playNotes = () => {
   // schedule the notes to be played
@@ -172,9 +172,9 @@ function setup() {
     textAlign(CENTER,CENTER);
     textSize(22);
     
-    // let button = createButton("Connect");
-    // button.position(width/3-45,15);
-    // button.mousePressed(connect);
+    let button = createButton("Ardunio");
+    button.position(width/2-20,height+10);
+    button.mousePressed(connect);
   }
   
   for (let i = 0; i < 4; i++) {
@@ -198,7 +198,27 @@ function setup() {
 
 //setInterval(changeBackgroundColor, 1000);
 function draw() {
-  if(isPressedButton==0){
+  if(reader){
+    if(isPressedButton==0&&!isPressed){
+      buttonPressed();
+    }else if(isPressedButton==1){
+      isPressed = false;
+    }
+  }else{
+    if(gameOver&&!isPressed&&keyIsDown(ENTER)){
+      score = 0;
+      gameOver = false;
+      roundOver = false;
+      //buttonPressed();
+      isPressed = true;
+      //console.log("Start")
+    }else if(!isPressed&&keyIsDown(ENTER)){
+      //console.log("press"+timer+isPressed);
+      isPressed = true;
+      roundOver = true;
+    }else if(!keyIsDown(ENTER)){
+      isPressed = false;
+    }
   }
   if (Tone.context.state !== 'running') {
     Tone.context.resume();
@@ -207,34 +227,29 @@ function draw() {
   if (reader && frameCount%3==0) {
     serialRead();
   }
+  if(writer&&gameOver){
+    writer.write(encoder.encode(255+","+255+","+255+"\n"));
+  }
   
   textFont('cursive');
-  if(gameOver&&!isPressed&&keyIsDown(ENTER)){
-    score = 0;
-    gameOver = false;
-    roundOver = false;
-    buttonPressed();
-    isPressed = true;
-    console.log("Start")
-  }else if(!isPressed&&keyIsDown(ENTER)){
-    console.log("press"+timer+isPressed);
-    isPressed = true;
-    roundOver = true;
-  }else if(!keyIsDown(ENTER)){
-    isPressed = false;
-  }
+  
   
   if(!gameOver){
     
 
     background("lightgray");
-    if(writer&& frameCount%5===0){
-      writer.write(encoder.encode(roundColor+"\n"));
+    if(writer){
+      writer.write(encoder.encode(roundColor[0]+","+roundColor[1]+","+roundColor[2]+"\n"));
+      //writer.write(encoder.encode(255+","+127+","+0+"\n"));
+      console.log(roundColor);
     }
     for(let tileC of map){
       tileC.show();
     }
     
+    if(reader){
+      joystick();
+    }else{
     if(keyIsDown(RIGHT_ARROW)){
       character.walk(2,0);
       character.show(rAni);
@@ -249,6 +264,7 @@ function draw() {
       character.show(dAni);
     } else{
       character.dogSit();
+    }
     }
     fill("white")
     rect(0, 0, width-1, 45);
@@ -310,7 +326,7 @@ function draw() {
     fill("red")
     if(score>=highScore && gamesPlayed != 0){
       highScore = score;
-      text("New High Score!", width/2, height/2+10);
+      text("New High Score!", width/2, height/2+20);
     }
   
     //displays gameover if a round just finished
@@ -325,25 +341,34 @@ function draw() {
     text("Press enter to start", width/2, height/3+50);
     textSize(20);
     text("Score: "+ score, width/2, height/2+50);
-    text("Highest Score: "+highScore,width/2, height/2+100);
+    text("Highest Score: "+highScore,width/2, height/2+75);
     textAlign("left")
   }
 }
 
 //adds to total for mouse is clicked to modify accuracy score
 function buttonPressed() {
-  if(gameOver){
-    gameOver=false;
+  if(gameOver&&!isPressed){
     score = 0;
+    gameOver = false;
+    roundOver = false;
+    //buttonPressed();
+    isPressed = true;
+    //console.log("Start")
+  }else if(!isPressed){
+    //console.log("press"+timer+isPressed);
+    isPressed = true;
+    roundOver = true;
   }
   Tone.Transport.start();
   Tone.start();
 }
 function joystick(){
-  if(xValue>520){
+  let moveX = true;
+  if(xValue>520&&((yValue<500&&xValue<yValue)||(yValue>520&&xValue>yValue)||(yValue>500&&yValue<520))){
     character.walk(2,0);
     character.show(rAni);
-  }else if(xValue<500){
+  }else if(xValue<500&&((yValue<500&&xValue<yValue)||(yValue>520&&xValue>yValue)||(yValue>500&&yValue<520))){
    character.walk(-2,0);
    character.show(lAni);
   }else if(yValue<500){
@@ -405,10 +430,12 @@ async function serialRead() {
     let temp = splitTokens(value,',');
     xValue = temp[0];
     yValue = temp[1];
-    isPressedButton = temp[2];    
+    isPressedButton = temp[2];   
+    //joystick(); 
+    //console.log("test")
+    //console.log(isPressedButton);
   }
 }
-
 
 async function connect() {
   port = await navigator.serial.requestPort();
