@@ -56,7 +56,7 @@ let bugCount = 0;
 let score = 0;
 let highScore = score;
 let gamesPlayed = 0;
-Tone.Transport.start();
+//Tone.Transport.start();
 let soundsOn = false;
 let dAni = [];
 let rAni = [];
@@ -203,7 +203,7 @@ function setup() {
 function startSound(){
   Tone.Transport.start();
   Tone.start(); 
-  soundsOn = !soundsOn;
+  soundsOn = !soundstoneOn;
   console.log("Sound: "+soundsOn);
 }
 
