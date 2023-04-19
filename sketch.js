@@ -194,11 +194,17 @@ function setup() {
   drawMap();
   roundColor = mapColor[int(Math.random(mapColor.length))];
   changeBackgroundColor();
+
+  let ruleButton = createButton("Rules");
+  ruleButton.position(20,height+10);
+  ruleButton.mousePressed(popUp);
 }
 
 
 //setInterval(changeBackgroundColor, 1000);
 function draw() {
+  
+
   if(reader){
     if(isPressedButton==0&&!isPressed){
       buttonPressed();
@@ -285,6 +291,8 @@ function draw() {
     if(roundOver){
       if(mapColor[character.spritePos()]==roundColor){
         resetRound();
+        score++;
+        levelUp.start();
       }else{
         gameOver=true;
       }      
@@ -292,6 +300,8 @@ function draw() {
     if (timer <= 0 || gameOver) {
       if(mapColor[character.spritePos()]==roundColor){
         resetRound();
+        score++;
+        levelUp.start();
       }else{
         gameOver=true;
         gamesPlayed++;
@@ -309,7 +319,6 @@ function draw() {
     }
   }else{
     
-
     if(frameCount%60==0) changeBackgroundColor();
     fill("lightgray")
     rect(width/8, height/4, width*3/4, height/2);
@@ -337,11 +346,20 @@ function draw() {
     if(gamesPlayed!=0){
       textSize(40);
       text("Game Over", width/2, 60)
+    }else{
+      textSize(20);
+      if(!reader)
+        text("Move with arrows and \npress enter to lock in color", width/2, height/2);
+      else
+        text("Move with joystick and \npress it to lock in color", width/2, height/2)
     }
 
     //Adds score information
     textSize(30);
-    text("Press enter to start", width/2, height/3+50);
+    if(!reader)
+      text("Press enter to start", width/2, height/3+30);
+    else 
+      text("Press joystick to start", width/2, height/3+30);
     textSize(20);
     text("Score: "+ score, width/2, height/2+50);
     text("Highest Score: "+highScore,width/2, height/2+75);
@@ -392,10 +410,7 @@ function changeBackgroundColor() {
 function resetRound(){
   newLevel();
   gameDelay = millis();
-  if(!gameOver){ 
-    score++;
-    levelUp.start();
-  }
+  
   timer+=2;
   mainTime = timer;
   drawMap();
@@ -404,7 +419,7 @@ function resetRound(){
 }
 
 function newLevel(){
-  //mapColor = mapColor.concat((colorList1.sort(() => Math.random() - 0.5)),(colorList2.sort(() => Math.random() - 0.5)),(colorList3.sort(() => Math.random() - 0.5)),(colorList4.sort(() => Math.random() - 0.5)),(colorList5.sort(() => Math.random() - 0.5)));
+
   mapColor = [];
   for(let i=0;i<7;i++){
     mapColor = mapColor.concat(colorList.sort(() => random() - 0.5));
@@ -434,10 +449,12 @@ async function serialRead() {
     xValue = temp[0];
     yValue = temp[1];
     isPressedButton = temp[2];   
-    //joystick(); 
-    //console.log("test")
-    //console.log(isPressedButton);
   }
+}
+async function popUp(){
+  window.alert("Rules: \nMove the sprite by using either the joystick or the arrow keys to a tile matching the color on the top of the screen or the rgb light."
+          +"\nOnce the character is standing on the correct tile press enter or press down on the joystick."+
+          "\n2 seconds will be added to the timer and the game continues until the timer reaches zero");
 }
 
 async function connect() {
