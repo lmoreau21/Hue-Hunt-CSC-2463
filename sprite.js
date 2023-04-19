@@ -16,6 +16,7 @@ class Sprite {
   //displays the bug
   show(direction){
     let index = floor(this.index) % this.len;
+    
     image(direction[index], this.x, this.y);
   }
 

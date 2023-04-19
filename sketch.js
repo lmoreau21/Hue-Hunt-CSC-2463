@@ -16,7 +16,7 @@ const decorder = new TextDecoder();
 let xValue = 00;
 let yValue = 00;
 let isPressedButton = 1;
-let cursor;
+let isPressed = false;
 
 let redC = [255,0,0];
 let orangeC = [255,128,0];
@@ -40,7 +40,7 @@ let character;
 
 //timers and counters
 const startTime = 10;
-let mainTime = startTime;
+let mainTime = 10;
 let timer = startTime;
 //let nextChange = timer;
 let gameDelay = 0;
@@ -94,6 +94,9 @@ const titleScreenNotes = [
 
 let gameOverSound = new Tone.Player("level.mp3").toDestination();
 gameOverSound.volume.value = 13;
+let levelUp = new Tone.Player("nextLevel.mp3").toDestination();
+levelUp.volume.value = 5;
+levelUp.fadeOut = 1;
 const distortion = new Tone.Distortion(0.8).toDestination();
 const reverb = new Tone.Reverb(1.5).toDestination();
 
@@ -165,14 +168,14 @@ function setup() {
   //background("lightgray");
   //background("gray")
   
-  // if ("serial" in navigator) {
-  //   textAlign(CENTER,CENTER);
-  //   textSize(22);
+  if ("serial" in navigator) {
+    textAlign(CENTER,CENTER);
+    textSize(22);
     
-  //   let button = createButton("Connect");
-  //   button.position(width/2-45,15);
-  //   button.mousePressed(connect);
-  // }
+    // let button = createButton("Connect");
+    // button.position(width/3-45,15);
+    // button.mousePressed(connect);
+  }
   
   for (let i = 0; i < 4; i++) {
       dAni.push(charactersheet.get(32*i, 0*32,32, 32));
@@ -195,43 +198,40 @@ function setup() {
 
 //setInterval(changeBackgroundColor, 1000);
 function draw() {
- 
-  // if(isPressedButton==0){
-  //   buttonPressed();
-  // }
-  // if (Tone.context.state !== 'running') {
-  //   Tone.context.resume();
+  if(isPressedButton==0){
+  }
+  if (Tone.context.state !== 'running') {
+    Tone.context.resume();
     
-  // }
-  // if (reader && frameCount%3==0) {
-  //   serialRead();
-  //   //buttonPressed();
-  // }
-  // if(writer&& frameCount%5===0){
-  //   writer.write(encoder.encode(redC+","+sgreenC+","+blueC+"\n"));
-  // }
-  // if(frameCount%25==0){
-  //   redC = 255;
-  //   greenC = 255;
-  //   blueC = 255;
-  // }
+  }
+  if (reader && frameCount%3==0) {
+    serialRead();
+  }
+  
   textFont('cursive');
-  //background("lightgray");
- 
-
-  //   character.walk();
-  //character.show(upAni);
-  //   character.walk();
-  if(keyIsDown(ENTER)&&gameOver){
+  if(gameOver&&!isPressed&&keyIsDown(ENTER)){
     score = 0;
     gameOver = false;
     roundOver = false;
-    
+    buttonPressed();
+    isPressed = true;
+    console.log("Start")
+  }else if(!isPressed&&keyIsDown(ENTER)){
+    console.log("press"+timer+isPressed);
+    isPressed = true;
+    roundOver = true;
+  }else if(!keyIsDown(ENTER)){
+    isPressed = false;
   }
+  
   if(!gameOver){
+    
+
     background("lightgray");
+    if(writer&& frameCount%5===0){
+      writer.write(encoder.encode(roundColor+"\n"));
+    }
     for(let tileC of map){
-      //console.log(tileC);
       tileC.show();
     }
     
@@ -248,9 +248,7 @@ function draw() {
       character.walk(0,2);
       character.show(dAni);
     } else{
-      //character.walk(-.1,-.1);
       character.dogSit();
-      //console.log(character)
     }
     fill("white")
     rect(0, 0, width-1, 45);
@@ -263,42 +261,36 @@ function draw() {
     textAlign(LEFT)
     text('Time: '+timer, 10, 30);
     textAlign(CENTER)
-    //textSize(30);
-    text("Hue Hunt: ", width/2-40, 30);
     
-    //console.log(character.spritePos());
-    //console.log(mapColor[character.spritePos()]);
-    //console.log(map[character.spritePos()].getColor());
-    if (timer <= 0) {
-      roundOver=true;
-      gameDelay = millis();
-      //console.log(map[character.spritePos()].getColor());
-      //console.log(mapColor[character.spritePos()]);
-      //console.log(roundColor);
+    text("Hue Hunt: ", width/2-40, 30);
+    if(roundOver){
       if(mapColor[character.spritePos()]==roundColor){
-        console.log("Passed round");
         resetRound();
       }else{
+        gameOver=true;
+      }      
+    }
+    if (timer <= 0 || gameOver) {
+      if(mapColor[character.spritePos()]==roundColor){
         resetRound();
-        changeBackgroundColor();
+      }else{
         gameOver=true;
         gamesPlayed++;
+        resetRound();
+        changeBackgroundColor();
         gameOverSound.start(); 
       }
-      //resetRound();
-      
-      
-      
-    }
+        
+      }          
     
-    
-    if (round((millis()-gameDelay)/1000) == mainTime-timer && timer>=0) {
+    if (round((millis()-gameDelay)/1000) == mainTime-timer+1 && timer>=0) {
       timer--;
-   
-      //synth.envelope.attack -= .01;
+            //synth.envelope.attack -= .01;
 
     }
   }else{
+    
+
     if(frameCount%60==0) changeBackgroundColor();
     fill("lightgray")
     rect(width/8, height/4, width*3/4, height/2);
@@ -306,8 +298,9 @@ function draw() {
     textAlign("center")
     
     //resets variables
+    
     gameDelay = millis();
-    //resetRound();
+    
     timer = startTime;
     mainTime = startTime;
     textSize(20);
@@ -338,18 +331,31 @@ function draw() {
 }
 
 //adds to total for mouse is clicked to modify accuracy score
-// function buttonPressed() {
-//   if(!gameOver){
-//     /*for (let bug of bugs) {
-//       bug.deathCheck(xValue,yValue);
-//     }*/
-//   }else{
-//     gameOver=false;
-//     score = 0;
-//   }
-//   Tone.Transport.start();
-//   Tone.start();
-// }
+function buttonPressed() {
+  if(gameOver){
+    gameOver=false;
+    score = 0;
+  }
+  Tone.Transport.start();
+  Tone.start();
+}
+function joystick(){
+  if(xValue>520){
+    character.walk(2,0);
+    character.show(rAni);
+  }else if(xValue<500){
+   character.walk(-2,0);
+   character.show(lAni);
+  }else if(yValue<500){
+    character.walk(0,-2);
+    character.show(uAni);
+  }else if(yValue>520){
+    character.walk(0,2);
+    character.show(dAni);
+  } else{
+    character.dogSit();
+  }
+}
 
 function changeBackgroundColor() {
   background(random(150)+100,random(150)+100,random(150)+100);
@@ -358,9 +364,12 @@ function changeBackgroundColor() {
 function resetRound(){
   newLevel();
   gameDelay = millis();
-  score++;
-  mainTime--;
-  timer = mainTime;
+  if(!gameOver){ 
+    score++;
+    levelUp.start();
+  }
+  timer+=2;
+  mainTime = timer;
   drawMap();
   roundOver=false;
   roundColor = mapColor[int(random(mapColor.length))];
@@ -372,9 +381,6 @@ function newLevel(){
   for(let i=0;i<7;i++){
     mapColor = mapColor.concat(colorList.sort(() => random() - 0.5));
   }
-  //console.log(mapColor);
-
-  
 }
 
 function drawMap(){
@@ -389,47 +395,47 @@ function drawMap(){
   
   }
 }
-// async function serialRead() {
-//   while(true) {
-//     const { value, done } = await reader.read();
-//     if (done) {
-//       reader.releaseLock();
-//       break;
-//     }
-//     let temp = splitTokens(value,',');
-//     xValue = temp[0]/2;
-//     yValue = temp[1]/2;
-//     isPressedButton = temp[2];    
-//   }
-// }
+async function serialRead() {
+  while(true) {
+    const { value, done } = await reader.read();
+    if (done) {
+      reader.releaseLock();
+      break;
+    }
+    let temp = splitTokens(value,',');
+    xValue = temp[0];
+    yValue = temp[1];
+    isPressedButton = temp[2];    
+  }
+}
 
 
-// async function connect() {
-//   port = await navigator.serial.requestPort();
+async function connect() {
+  port = await navigator.serial.requestPort();
 
-//   await port.open({ baudRate: 9600 });
+  await port.open({ baudRate: 9600 });
 
-//   writer = port.writable.getWriter();
+  writer = port.writable.getWriter();
 
-//   reader = port.readable
-//      .pipeThrough(new TextDecoderStream())
-//      .pipeThrough(new TransformStream(new LineBreakTransformer()))
-//      .getReader();
-// }
+  reader = port.readable
+     .pipeThrough(new TextDecoderStream())
+     .pipeThrough(new TransformStream(new LineBreakTransformer()))
+     .getReader();
+}
 
-// class LineBreakTransformer {
-//   constructor() {
-//     this.chunks = "";
-//   }
+class LineBreakTransformer {
+  constructor() {
+    this.chunks = "";
+  }
 
-//   transform(chunk, controller) {
-//     this.chunks += chunk;
-//     const lines = this.chunks.split("\n");
-//     this.chunks = lines.pop();
-//     lines.forEach((line) => controller.enqueue(line));
-//   }
+  transform(chunk, controller) {
+    this.chunks += chunk;
+    const lines = this.chunks.split("\n");
+    this.chunks = lines.pop();
+    lines.forEach((line) => controller.enqueue(line));
+  }
 
-//   flush(controller) {
-//     controller.enqueue(this.chunks);
-//   }
-// }
+  flush(controller) {
+    controller.enqueue(this.chunks);
+  }
+}
