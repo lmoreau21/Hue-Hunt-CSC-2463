@@ -84,7 +84,7 @@ const notes =  [
   "E4", "D4", "E4", "F4", "G4", "E4", "C4", "D4", "E4",
   "E4", "D4", "E4", "F4", "G4", "E4", "C4", "D4", "E4"
 ];
-// const bugSound = ["C4", "D#4", "F#4", "A4"];
+const bugSound = ["C4", "D#4", "F#4", "A4"];
 const titleScreenNotes = [
   "C3", "E3", "G3", "C4", "E4", "G4", "C5", "E5", "G5",
   "C3", "F3", "A3", "C4", "F4", "A4", "C5", "F5", "A5",
@@ -104,14 +104,14 @@ const reverb = new Tone.Reverb(1.5).toDestination();
 let durationS = .22;
 let curSound, gamesynth;
 let index = 0;
-// let bugSeq =  new Tone.Sequence((time, note) => {
-//   index++;
-//   gamesynth.triggerAttackRelease(note, ".1", time);
-//   if(index>=bugSound.length){
-//     index=0;
-//     bugSeq.stop();
-//   }
-// }, bugSound, ".1");
+let bugSeq =  new Tone.Sequence((time, note) => {
+  index++;
+  gamesynth.triggerAttackRelease(note, ".1", time);
+  if(index>=bugSound.length){
+    index=0;
+    bugSeq.stop();
+  }
+}, bugSound, ".1");
 
 const playNotes = () => {
   // schedule the notes to be played
