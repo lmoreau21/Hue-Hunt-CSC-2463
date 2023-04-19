@@ -410,7 +410,6 @@ function changeBackgroundColor() {
 function resetRound(){
   newLevel();
   gameDelay = millis();
-  
   timer+=2;
   mainTime = timer;
   drawMap();
