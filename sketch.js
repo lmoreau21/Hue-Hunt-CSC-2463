@@ -292,7 +292,7 @@ function draw() {
       if(mapColor[character.spritePos()]==roundColor){
         resetRound();
         score++;
-        levelUp.start();
+        //levelUp.start();
       }else{
         gameOver=true;
       }      
@@ -301,7 +301,7 @@ function draw() {
       if(mapColor[character.spritePos()]==roundColor){
         resetRound();
         score++;
-        levelUp.start();
+        //levelUp.start();
       }else{
         gameOver=true;
         gamesPlayed++;
