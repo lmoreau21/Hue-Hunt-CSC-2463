@@ -35,7 +35,7 @@ let roundColor;
 let charactersheet;
 let characterdata;
 let animation = [];
-let death = [];
+//let death = [];
 let character;
 
 //timers and counters
@@ -104,14 +104,14 @@ const reverb = new Tone.Reverb(1.5).toDestination();
 let durationS = .22;
 let curSound, gamesynth;
 let index = 0;
-let bugSeq =  new Tone.Sequence((time, note) => {
-  index++;
-  gamesynth.triggerAttackRelease(note, ".1", time);
-  if(index>=bugSound.length){
-    index=0;
-    bugSeq.stop();
-  }
-}, bugSound, ".1");
+// let bugSeq =  new Tone.Sequence((time, note) => {
+//   index++;
+//   gamesynth.triggerAttackRelease(note, ".1", time);
+//   if(index>=bugSound.length){
+//     index=0;
+//     bugSeq.stop();
+//   }
+// }, bugSound, ".1");
 
 const playNotes = () => {
   // schedule the notes to be played
@@ -158,7 +158,7 @@ function preload() {
   Tone.Transport.start();
   Tone.start(); 
 
-  playNotes();
+  //playNotes();
 }
 
 //converts images to animation
@@ -188,7 +188,7 @@ function setup() {
   character = new Sprite();
   Tone.Transport.start();
   Tone.start(); 
-  playNotes();
+  //playNotes();
   
   newLevel();
   drawMap();
