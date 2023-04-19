@@ -57,7 +57,7 @@ let score = 0;
 let highScore = score;
 let gamesPlayed = 0;
 Tone.Transport.start();
-
+let soundsOn = false;
 let dAni = [];
 let rAni = [];
 let lAni = []; 
@@ -94,8 +94,8 @@ const titleScreenNotes = [
 
 let gameOverSound = new Tone.Player("level.mp3").toDestination();
 gameOverSound.volume.value = 13;
-//let levelUp = new Tone.Player("nextLevel.mp3").toDestination();
-//levelUp.volume.value = 5;
+let levelUp = new Tone.Player("nextLevel.mp3").toDestination();
+levelUp.volume.value = 5;
 
 const distortion = new Tone.Distortion(0.8).toDestination();
 const reverb = new Tone.Reverb(1.5).toDestination();
@@ -154,11 +154,8 @@ function preload() {
     }
   }).chain(distortion, reverb);
   charactersheet = loadImage('dog.png');  
-  
-  Tone.Transport.start();
-  Tone.start(); 
 
-  //playNotes();
+  //if(soundsOn) playNotes();
 }
 
 //converts images to animation
@@ -186,8 +183,7 @@ function setup() {
   }
   
   character = new Sprite();
-  Tone.Transport.start();
-  Tone.start(); 
+ 
   //playNotes();
   
   newLevel();
@@ -198,6 +194,17 @@ function setup() {
   let ruleButton = createButton("Rules");
   ruleButton.position(20,height+10);
   ruleButton.mousePressed(popUp);
+
+  let soundButton = createButton("Sound");
+  soundButton.position(width-50,height+10);
+  soundButton.mousePressed(startSound);
+}
+
+function startSound(){
+  Tone.Transport.start();
+  Tone.start(); 
+  soundsOn = !soundsOn;
+  console.log("Sound: "+soundsOn);
 }
 
 
@@ -218,8 +225,6 @@ function draw() {
       roundOver = false;
       //buttonPressed();
       isPressed = true;
-      Tone.Transport.start();
-      Tone.start();
       //console.log("Start")
     }else if(!isPressed&&keyIsDown(ENTER)){
       //console.log("press"+timer+isPressed);
@@ -228,10 +233,6 @@ function draw() {
     }else if(!keyIsDown(ENTER)){
       isPressed = false;
     }
-  }
-  if (Tone.context.state !== 'running') {
-    Tone.context.resume();
-    
   }
   if (reader && frameCount%3==0) {
     serialRead();
@@ -245,7 +246,6 @@ function draw() {
   
   if(!gameOver){
     
-
     background("lightgray");
     if(writer){
       writer.write(encoder.encode(roundColor[0]+","+roundColor[1]+","+roundColor[2]+"\n"));
@@ -292,7 +292,7 @@ function draw() {
       if(mapColor[character.spritePos()]==roundColor){
         resetRound();
         score++;
-        //levelUp.start();
+        if(soundsOn) levelUp.start();
       }else{
         gameOver=true;
       }      
@@ -301,13 +301,13 @@ function draw() {
       if(mapColor[character.spritePos()]==roundColor){
         resetRound();
         score++;
-        //levelUp.start();
+        if(soundsOn) levelUp.start();
       }else{
         gameOver=true;
         gamesPlayed++;
         resetRound();
         changeBackgroundColor();
-        gameOverSound.start(); 
+        if(soundsOn) gameOverSound.start(); 
       }
         
       }          
@@ -381,11 +381,8 @@ function buttonPressed() {
     isPressed = true;
     roundOver = true;
   }
-  Tone.Transport.start();
-  Tone.start();
 }
 function joystick(){
-  let moveX = true;
   if(xValue>520&&((yValue<500&&xValue<yValue)||(yValue>520&&xValue>yValue)||(yValue>500&&yValue<520))){
     character.walk(2,0);
     character.show(rAni);
