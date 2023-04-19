@@ -94,8 +94,8 @@ const titleScreenNotes = [
 
 let gameOverSound = new Tone.Player("level.mp3").toDestination();
 gameOverSound.volume.value = 13;
-let levelUp = new Tone.Player("nextLevel.mp3").toDestination();
-levelUp.volume.value = 5;
+//let levelUp = new Tone.Player("nextLevel.mp3").toDestination();
+//levelUp.volume.value = 5;
 
 const distortion = new Tone.Distortion(0.8).toDestination();
 const reverb = new Tone.Reverb(1.5).toDestination();
