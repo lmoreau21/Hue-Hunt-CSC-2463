@@ -222,9 +222,11 @@ function draw() {
   //   character.walk();
   //character.show(upAni);
   //   character.walk();
-  if(keyIsDown(ENTER)){
+  if(keyIsDown(ENTER)&&gameOver){
+    score = 0;
     gameOver = false;
     roundOver = false;
+    
   }
   if(!gameOver){
     background("lightgray");
@@ -336,18 +338,18 @@ function draw() {
 }
 
 //adds to total for mouse is clicked to modify accuracy score
-function buttonPressed() {
-  if(!gameOver){
-    /*for (let bug of bugs) {
-      bug.deathCheck(xValue,yValue);
-    }*/
-  }else{
-    gameOver=false;
-    score = 0;
-  }
-  Tone.Transport.start();
-  Tone.start();
-}
+// function buttonPressed() {
+//   if(!gameOver){
+//     /*for (let bug of bugs) {
+//       bug.deathCheck(xValue,yValue);
+//     }*/
+//   }else{
+//     gameOver=false;
+//     score = 0;
+//   }
+//   Tone.Transport.start();
+//   Tone.start();
+// }
 
 function changeBackgroundColor() {
   background(random(150)+100,random(150)+100,random(150)+100);
