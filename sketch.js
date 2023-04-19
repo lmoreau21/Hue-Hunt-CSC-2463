@@ -186,6 +186,7 @@ function setup() {
   }
   
   character = new Sprite();
+  Tone.Transport.start();
   Tone.start(); 
   playNotes();
   
