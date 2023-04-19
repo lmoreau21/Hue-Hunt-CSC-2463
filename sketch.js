@@ -203,7 +203,7 @@ function setup() {
 function startSound(){
   Tone.Transport.start();
   Tone.start(); 
-  soundsOn = !soundstoneOn;
+  soundsOn = !soundsOn;
   console.log("Sound: "+soundsOn);
 }
 
