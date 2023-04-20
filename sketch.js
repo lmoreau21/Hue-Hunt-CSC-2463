@@ -40,7 +40,7 @@ let character;
 
 //timers and counters
 const startTime = 10;
-let mainTime = 10;
+let mainTime = startTime;
 let timer = startTime;
 //let nextChange = timer;
 let gameDelay = 0;
@@ -249,8 +249,9 @@ function draw() {
     background("lightgray");
     if(writer){
       writer.write(encoder.encode(roundColor[0]+","+roundColor[1]+","+roundColor[2]+"\n"));
+      //console.log(encoder.encode(roundColor[0]+","+roundColor[1]+","+roundColor[2]+"\n"));
       //writer.write(encoder.encode(255+","+127+","+0+"\n"));
-      console.log(roundColor);
+      //console.log(roundColor);
     }
     for(let tileC of map){
       tileC.show();
