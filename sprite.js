@@ -1,40 +1,42 @@
 //Sprite creation class
 class Sprite {
-  constructor() {
-    this.x = width/2-16;
-    this.y = height/2-16;
+  constructor(up,down,left,right,sit) {
+    spriteX = width/2-16;
+    spriteY = height/2-16;
     this.w = 32;
     this.h = 32;
     this.len = 4;
     this.speed = .05;
     this.index = 0;
     this.sitAnimation = false;
+    this.animation = [up,down,left,right];
+    this.sitAni = sit;
   }
 
   //displays the bug
   show(direction){
     let index = floor(this.index) % this.len;
     
-    image(direction[index], this.x, this.y);
+    image(this.animation[direction][index], spriteX, spriteY);
   }
 
   //adds to the x value of the bug
   walk(x,y) {
     this.sitAnimation = false;
     this.index += this.speed;
-    if(this.x>width-32&&x>0){
-      this.x += this.speed - x/2;
-    }else if(this.x<5&&x<0){
-      this.x += this.speed - x/2;
+    if(spriteX>width-32&&x>0){
+      spriteX += this.speed - x/2;
+    }else if(spriteX<5&&x<0){
+      spriteX += this.speed - x/2;
     }else{
-      this.x += this.speed + x;
+      spriteX += this.speed + x;
     } 
-    if(this.y>height-32&&y>0){
-      this.y += this.speed - y/2;
-    }else if(this.y<50&&y<0){
-      this.y += this.speed - y/2;
+    if(spriteY>height-32&&y>0){
+      spriteY += this.speed - y/2;
+    }else if(spriteY<50&&y<0){
+      spriteY += this.speed - y/2;
     }else{
-      this.y += this.speed + y;
+      spriteY += this.speed + y;
     }
     
   }
@@ -46,16 +48,16 @@ class Sprite {
       this.sitAnimation = true;
     }
     if(this.sitAnimation){
-      image(stand[3], this.x, this.y);
+      image(this.sitAni[3],spriteX,spriteY);
     }else{
-      image(stand[index], this.x, this.y);
+      image(this.sitAni[index], spriteX, spriteY);
     }
   }
 
   spritePos(){
 
-    let indexX = int((this.x+this.w/2)/(width/8));
-    let indexY = int((this.y-this.h/2)/((height-45)/7));
+    let indexX = int((spriteX+this.w/2)/(width/8));
+    let indexY = int((spriteY-this.h/2)/((height-45)/7));
     return indexX+indexY*8;
   }
   

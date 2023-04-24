@@ -8,7 +8,6 @@
 * this will add 2 seconds (arrows) or 5 seconds (joystick) to the timer
 * run to and select as many tiles as you can before the time reaches 0
 */
-
 let port;
 let writer, reader;
 const encoder = new TextEncoder();
@@ -54,7 +53,7 @@ let roundOver = true;
 let score = 0;
 let highScore = score;
 let gamesPlayed = 0;
-//Tone.Transport.start();
+
 let soundsOn = true;
 let dAni = [];
 let rAni = [];
@@ -89,8 +88,20 @@ const titleScreenNotes = [
   "Bb2", "D3", "F3", "Bb3", "D4", "F4", "Bb4", "D5", "F5",
   "Bb2", "Db3", "F3", "Bb3", "Db4", "F4", "Bb4", "Db5", "F5"
 ];
-//const walkNotes = ["C3", "E3", "D3", "F3", "E3", "G3", "F3", "A3"];
-//const walkNotes = ["C2", "E2"];
+
+
+const characterSet = new Map([
+  ["BlondeDog", 0],
+  ["BrownDog", 1],
+  ["GoldCat", 2],
+  ["GrayCat", 3],
+  ["MulticolorDog", 4],
+  ["OrangeCat", 5]
+]);
+
+let spriteX;
+let spriteY;
+//audio files defined in the preload
 let gameOverSound;
 let levelUp;
 let footsteps;
@@ -103,9 +114,13 @@ let durationS = .22;
 let curSound, gamesynth;
 let index = 0;
 
+//user character list
+let characterList = [];
+let difficulty;
+let characterSelect;
+
 const playNotes = () => {
   // schedule the notes to be played
-  
     let index = 0;
     curSound = titleScreenNotes;
     Tone.Transport.scheduleRepeat((time) => {
@@ -132,15 +147,7 @@ function preload() {
     }
   }).toDestination();
   synth.volume.value=-3;
-
-  // gamesynth  = new Tone.Synth().toDestination();
-  
-  // sequence = new Tone.Sequence((time, note) => {
-  //   gamesynth.triggerAttackRelease(note, "8n", time);
-  // }, walkNotes);
-  
-
-  charactersheet = loadImage('dog.png');  
+  charactersheets = [loadImage('blondedog.png'),loadImage('browndog.png'),loadImage('goldcat.png'),loadImage('graycat.png'),loadImage('multdog.png'),loadImage('orangecat.png')];  
   
   gameOverSound = new Tone.Player("level.mp3").toDestination();
   gameOverSound.volume.value = 13;
@@ -153,7 +160,7 @@ function preload() {
 
 }
 
-//converts images to animation
+//converts images to animation and adds buttons
 function setup() {
   
   createCanvas(1023/2, 1023/2-20);
@@ -166,16 +173,10 @@ function setup() {
     button.position(width/2-20,height+10);
     button.mousePressed(connect);
   }
-  
-  for (let i = 0; i < 4; i++) {
-      dAni.push(charactersheet.get(32*i, 0*32,32, 32));
-      rAni.push(charactersheet.get(32*i, 1*32,32, 32));
-      uAni.push(charactersheet.get(32*i, 2*32,32, 32));
-      lAni.push(charactersheet.get(32*i, 3*32,32, 32));
-      stand.push(charactersheet.get(32*i, 4*32,32, 32));
-  }
-  
-  character = new Sprite();
+  for(let sheet of charactersheets)
+    createCharacter(sheet);
+  character = characterList[1];
+
   Tone.Transport.start();
   
   Tone.start();
@@ -193,10 +194,38 @@ function setup() {
   ruleButton.mousePressed(popUp);
 
   let soundButton = createButton("Sound");
-  soundButton.position(width-50,height+10);
+  soundButton.position(width-60,height+10);
   soundButton.mousePressed(startSound);
+
+  characterSelect = createSelect();
+  characterSelect.position(100, height+12);
+  characterSelect.option("BlondeDog");
+  characterSelect.option("BrownDog");
+  characterSelect.option("GoldCat");
+  characterSelect.option("GrayCat");
+  characterSelect.option("MulticolorDog");
+  characterSelect.option("OrangeCat");
+  characterSelect.selected("BlondeDog");
 }
 
+function createCharacter(sheet){
+  dAni = [];
+  rAni = [];
+  uAni = [];
+  lAni = [];
+  stand = [];
+  for (let i = 0; i < 4; i++) {
+      dAni.push(sheet.get(32*i, 0*32,32, 32));
+      rAni.push(sheet.get(32*i, 1*32,32, 32));
+      uAni.push(sheet.get(32*i, 2*32,32, 32));
+      lAni.push(sheet.get(32*i, 3*32,32, 32));
+      stand.push(sheet.get(32*i, 4*32,32, 32));
+  }
+  characterList.push(new Sprite(uAni,dAni,lAni,rAni,stand));
+  
+}
+
+//togles sound
 function startSound(){
   soundsOn = !soundsOn;
   if(soundsOn){
@@ -205,11 +234,16 @@ function startSound(){
   }else{
     Tone.Transport.stop();
   }
-
 }
 
 
-function draw() {  
+function draw() { 
+  //changes the character to the user selected one
+  character = characterList[characterSet.get(characterSelect.value())];
+  //font type
+  textFont('Helvetica');
+  //checks if serial is plugged in if button is pressed
+  //these if statements and booleans forces it only to call a function once  
   if(reader){
     if(isPressedButton==0&&!isPressed){
       buttonPressed();
@@ -217,6 +251,7 @@ function draw() {
       isPressed = false;
     }
   }else{
+    //if enter is pressded it starts round
     if(gameOver&&!isPressed&&keyIsDown(ENTER)){
       score = 0;
       gameOver = false;
@@ -229,17 +264,17 @@ function draw() {
       isPressed = false;
     }
   }
+  //collects joystick value
   if (reader && frameCount%3==0) {
     serialRead();
   }
+  //causes led to be white when on game screen
   if(writer&&gameOver&&frameCount%10==0){
     writer.write(encoder.encode(255+","+255+","+255+"\n"));
   }
   
-  textFont('cursive');
-  
+  //live game code
   if(!gameOver){
-    
     background("lightgray");
     if(writer&&frameCount%5==0){
       writer.write(encoder.encode(ledColorSwap()+"\n"));
@@ -259,19 +294,19 @@ function draw() {
     fill("black");
     if (!reader) {
       fill(roundColor);
-      rect(width/2+15,5,35,35)
+      rect(width/2+15,10,25,25)
       fill("black");
       textAlign(CENTER)
-      text("Hue Hunt: ", width/2-40, 30);
+      text("Hue Hunt: ", width/2-40, 25);
     }else{
       textAlign(CENTER)
-      text("Hue Hunt", width/2, 30);
+      text("Hue Hunt", width/2, 25);
     }
     textSize(20);
     textAlign(RIGHT)
-    text('Score: '+score, width-15, 30);
+    text('Score: '+score, width-15, 25);
     textAlign(LEFT)
-    text('Time: '+timer, 10, 30);
+    text('Time: '+timer, 10, 25);
    
     //if round is forced over by pressing or enter this will check score
     if(roundOver || timer <= 0){
@@ -299,18 +334,20 @@ function draw() {
       //synth.envelope.attack -= .01;
       Tone.Transport.bpm.value = Tone.Transport.bpm.value + 1;
     }
+  //game over/menu screen
   }else{
-    Tone.Transport.bpm.value = 90;
+    
     if(frameCount%60==0) changeBackgroundColor();
     fill("lightgray")
     rect(width/8, height/4, width*3/4, height/2);
     fill("black")
-    textAlign("center")
-    
+   
+    textAlign(CENTER)
+    textSize(35);
+    text("Hue Hunt", width/2, height/3);
     //resets variables
-    
     gameDelay = millis();
-    
+    Tone.Transport.bpm.value = 90;
     timer = startTime;
     mainTime = startTime;
     textSize(20);
@@ -330,18 +367,15 @@ function draw() {
       text("Game Over", width/2, 60)
     }else{
       textSize(20);
-      if(!reader)
-        text("Move with arrows and \npress enter to lock in color", width/2, height/2);
-      else
-        text("Move with joystick and \npress it to lock in color", width/2, height/2)
+      text("Press Button in bottom-left for Rules", width/2, height/2+20);
     }
 
     //Adds score information
-    textSize(30);
+    textSize(25);
     if(!reader)
-      text("Press enter to start", width/2, height/3+30);
+      text("Press enter to start", width/2, height/3+50);
     else 
-      text("Press joystick to start", width/2, height/3+30);
+      text("Press joystick to start", width/2, height/3+50);
     textSize(20);
     text("Score: "+ score, width/2, height/2+50);
     text("Highest Score: "+highScore,width/2, height/2+75);
@@ -365,19 +399,19 @@ function buttonPressed() {
 function joystick(){
   if(xValue>520&&((yValue<500&&xValue<yValue)||(yValue>520&&xValue>yValue)||(yValue>500&&yValue<520))){
     character.walk(2,0);
-    character.show(rAni);
+    character.show(3);
     startWalking()
   }else if(xValue<500&&((yValue<500&&xValue<yValue)||(yValue>520&&xValue>yValue)||(yValue>500&&yValue<520))){
    character.walk(-2,0);
-   character.show(lAni);
+   character.show(2);
    startWalking()
   }else if(yValue<500){
     character.walk(0,-2);
-    character.show(uAni);
+    character.show(0);
     startWalking()
   }else if(yValue>520){
     character.walk(0,2);
-    character.show(dAni);
+    character.show(1);
     startWalking()
   } else{
     character.dogSit();
@@ -392,19 +426,19 @@ function joystick(){
 function arrows(){
   if(keyIsDown(RIGHT_ARROW)){
     character.walk(2,0);
-    character.show(rAni);
+    character.show(3);
     startWalking()
   }else if(keyIsDown(LEFT_ARROW)){
     character.walk(-2,0);
-    character.show(lAni);
+    character.show(2);
     startWalking()
   }else if(keyIsDown(UP_ARROW)){
     character.walk(0,-2);
-    character.show(uAni);
+    character.show(0);
     startWalking()
   }else if(keyIsDown(DOWN_ARROW)){
     character.walk(0,2);
-    character.show(dAni);
+    character.show(1);
     startWalking()
   } else{
     character.dogSit();
@@ -420,7 +454,6 @@ function changeBackgroundColor() {
 
 //resets the round
 function resetRound(){
-  //footsteps.start();
   //blinks the light if the serial is connected
   if(writer){
     writer.write(encoder.encode(0+","+0+","+0+"\n")); 
@@ -438,10 +471,10 @@ function resetRound(){
   mainTime = timer;
   drawMap();
   roundOver=false;
-  
   roundColor = colorList[int(random(colorList.length))];
 }
 
+//footsteps sound
 function startWalking() {
   if(!isWalking){
     if(soundsOn) footsteps.start();
@@ -462,6 +495,14 @@ function ledColorSwap(){
   return colorValue;
 }
 
+function characterReturn(){
+  switch(characterSelect.value){
+    case 'Bonde Dog': character = characterList[1]; break;
+    case pinkC: colorValue = pinkLED; break;
+    case yellowC: colorValue = yellowLED; break;
+  }
+  return colorValue;
+}
 //reorders the map layout
 function newLevel(){
   mapColor = [];
@@ -472,6 +513,7 @@ function newLevel(){
 
 //iterates through the mapColor list and displays all the tiles 
 function drawMap(){
+  map = [];
   let index=0;
   for(let i=0;i<7;i++){
     for(let j=0;j<8;j++){
