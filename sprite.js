@@ -56,7 +56,7 @@ class Sprite {
   spritePos(){
 
     let indexX = int((this.x+this.w/2)/(width/8));
-    let indexY = int((this.y+this.h-45)/((height-45)/7));
+    let indexY = int((this.y+this.h-35)/((height-45)/7));
     
     //console.log(indexX+indexY*8);
     return indexX+indexY*8;

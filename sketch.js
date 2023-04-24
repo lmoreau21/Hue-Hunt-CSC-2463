@@ -18,19 +18,22 @@ let yValue = 00;
 let isPressedButton = 1;
 let isPressed = false;
 
-let redC = [255,0,0];
-let orangeC = [255,128,0];
+let redC = [250,0,0];
+let orangeC = [255,140,0];
 let yellowC = [255,255,0];
 let greenC = [0,255,0];
 let lBlueC = [0,255,255];
 let dBlueC = [0,0,255];
-let purpleC = [155,0,255];
-let pinkC = [255,0,127];
+let purpleC = [188,0,241];
+let pinkC = [255,105,180];
+let organgeLED = [255,30,0];
+let pinkLED = [150,20,20];
+let yellowLED = [200,100,0];
 let colorList=[redC,orangeC,yellowC,greenC,lBlueC,dBlueC,purpleC,pinkC];
 let map = [];
 let mapColor = [];
 let roundColor;
-
+let ledRoundColor;
 //images
 let charactersheet;
 let characterdata;
@@ -49,8 +52,6 @@ let gameDelay = 0;
 let gameOver = true;
 let roundOver = true;
 
-//tracks the bugs in the array
-let bugCount = 0;
 
 //score/round variables
 let score = 0;
@@ -185,10 +186,12 @@ function setup() {
   character = new Sprite();
  
   //playNotes();
-  
+  let colorIndex = int(random(colorList.length));
+  roundColor = colorList[colorIndex];
+
   newLevel();
   drawMap();
-  roundColor = mapColor[int(Math.random(mapColor.length))];
+
   changeBackgroundColor();
 
   let ruleButton = createButton("Rules");
@@ -237,7 +240,7 @@ function draw() {
   if (reader && frameCount%3==0) {
     serialRead();
   }
-  if(writer&&gameOver){
+  if(writer&&gameOver&&frameCount%10==0){
     writer.write(encoder.encode(255+","+255+","+255+"\n"));
   }
   
@@ -247,10 +250,10 @@ function draw() {
   if(!gameOver){
     
     background("lightgray");
-    if(writer){
-      writer.write(encoder.encode(roundColor[0]+","+roundColor[1]+","+roundColor[2]+"\n"));
+    if(writer&&frameCount%5==0){
+      //writer.write(encoder.encode(roundColor[0]+","+roundColor[1]+","+roundColor[2]+"\n"));
       //console.log(encoder.encode(roundColor[0]+","+roundColor[1]+","+roundColor[2]+"\n"));
-      //writer.write(encoder.encode(255+","+127+","+0+"\n"));
+      writer.write(encoder.encode(ledColorSwap()+"\n"));
       //console.log(roundColor);
     }
     for(let tileC of map){
@@ -278,17 +281,23 @@ function draw() {
     }
     fill("white")
     rect(0, 0, width-1, 45);
-    fill(roundColor);
-    rect(width/2+15,5,35,35)
-    fill("black")
+    fill("black");
+    if (!reader) {
+      fill(roundColor);
+      rect(width/2+15,5,35,35)
+      fill("black");
+      textAlign(CENTER)
+      text("Hue Hunt: ", width/2-40, 30);
+    }else{
+      textAlign(CENTER)
+      text("Hue Hunt", width/2, 30);
+    }
     textSize(20);
     textAlign(RIGHT)
     text('Score: '+score, width-15, 30);
     textAlign(LEFT)
     text('Time: '+timer, 10, 30);
-    textAlign(CENTER)
-    
-    text("Hue Hunt: ", width/2-40, 30);
+   
     if(roundOver){
       if(mapColor[character.spritePos()]==roundColor){
         resetRound();
@@ -406,13 +415,39 @@ function changeBackgroundColor() {
 }
 
 function resetRound(){
+  if(writer){
+    writer.write(encoder.encode(0+","+0+","+0+"\n"));
+    
+  }
+
   newLevel();
   gameDelay = millis();
-  timer+=2;
+  if(!reader){
+    timer+=2;
+  }else{
+    timer += 5;
+  }
   mainTime = timer;
   drawMap();
   roundOver=false;
-  roundColor = mapColor[int(random(mapColor.length))];
+  let colorIndex = int(random(colorList.length));
+
+  
+  roundColor = colorList[colorIndex];
+  //ledRoundColor = ledColorList[colorIndex];
+  //console.log(roundColor+":"+ledRoundColor);
+}
+
+function ledColorSwap(){
+  let colorValue = roundColor;
+  switch(roundColor){
+    case orangeC: colorValue = organgeLED; break;
+    case pinkC: colorValue = pinkLED; break;
+    case yellowC: colorValue = yellowLED; break;
+  }
+  return colorValue;
+
+
 }
 
 function newLevel(){
