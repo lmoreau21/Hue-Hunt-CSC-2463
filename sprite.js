@@ -1,5 +1,3 @@
-//https://youtu.be/ZAcpYT4nm6E
-
 //Sprite creation class
 class Sprite {
   constructor() {
@@ -38,6 +36,7 @@ class Sprite {
     }else{
       this.y += this.speed + y;
     }
+    
   }
 
   dogSit(){
@@ -56,24 +55,8 @@ class Sprite {
   spritePos(){
 
     let indexX = int((this.x+this.w/2)/(width/8));
-    let indexY = int((this.y+this.h-35)/((height-45)/7));
-    
-    //console.log(indexX+indexY*8);
+    let indexY = int((this.y-this.h/2)/((height-45)/7));
     return indexX+indexY*8;
   }
-
-
-  //will make the bug unclickable and update the score
-  deathCheck(xValue,yValue){
-    if(!gameOver&&((xValue > this.x && xValue < this.x+this.w)||(xValue < abs(this.x) && xValue > abs(this.x)-this.w)) && (yValue > this.y && yValue < this.y+35) && !this.killBug){
-      this.killBug = true;
-      score++;
-      bugSeq.start(); 
-      redC = 0;
-      blueC = 255;
-      greenC = 255;
-    }
-  }
-
   
 }

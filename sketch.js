@@ -1,12 +1,12 @@
-/*https://youtu.be/ZAcpYT4nm6E
-* the output on the ardunio is the rgb light
-  * its greenish during the main menu (it has a little bit of randomness)
-  * its off during the game
-  * it flashed red whenever you smash a bug
-* the input is the joystick
-  * moving the joystick moves the red dot which is the cursor
-  * pressing down on the joystick is like right clicking to smash a bug
-  * it also allows you to start the game by clicking
+/* Hue Hunt
+* rules in the bottom left
+* connect to the ardunio in the bottom middle
+* press enter or press down on the joystick to start the game
+* the timer starts at 10 seconds
+* move the sprite using arrows or jostick to control the dog
+* once you reach the color on the top of the screen or the rgb press enter or joystick
+* this will add 2 seconds (arrows) or 5 seconds (joystick) to the timer
+* run to and select as many tiles as you can before the time reaches 0
 */
 
 let port;
@@ -37,8 +37,6 @@ let ledRoundColor;
 //images
 let charactersheet;
 let characterdata;
-let animation = [];
-//let death = [];
 let character;
 
 //timers and counters
@@ -52,21 +50,21 @@ let gameDelay = 0;
 let gameOver = true;
 let roundOver = true;
 
-
 //score/round variables
 let score = 0;
 let highScore = score;
 let gamesPlayed = 0;
 //Tone.Transport.start();
-let soundsOn = false;
+let soundsOn = true;
 let dAni = [];
 let rAni = [];
 let lAni = []; 
 let uAni = [];
 let stand = [];
+let isWalking = false;
 // create a new Tone.js synth1
 let synth;
-// define the notes of the Gravity Falls theme song
+let sequence
 const notes =  [
   "E3", "D3", "E3", "F3", "G3", "E3", "C3", "D3", "E3",
   "E3", "D3", "E3", "F3", "G3", "E3", "C3", "D3", "E3",
@@ -85,18 +83,17 @@ const notes =  [
   "E4", "D4", "E4", "F4", "G4", "E4", "C4", "D4", "E4",
   "E4", "D4", "E4", "F4", "G4", "E4", "C4", "D4", "E4"
 ];
-const bugSound = ["C4", "D#4", "F#4", "A4"];
 const titleScreenNotes = [
   "C3", "E3", "G3", "C4", "E4", "G4", "C5", "E5", "G5",
   "C3", "F3", "A3", "C4", "F4", "A4", "C5", "F5", "A5",
   "Bb2", "D3", "F3", "Bb3", "D4", "F4", "Bb4", "D5", "F5",
   "Bb2", "Db3", "F3", "Bb3", "Db4", "F4", "Bb4", "Db5", "F5"
 ];
-
-let gameOverSound = new Tone.Player("level.mp3").toDestination();
-gameOverSound.volume.value = 13;
-let levelUp = new Tone.Player("nextLevel.mp3").toDestination();
-levelUp.volume.value = 5;
+//const walkNotes = ["C3", "E3", "D3", "F3", "E3", "G3", "F3", "A3"];
+//const walkNotes = ["C2", "E2"];
+let gameOverSound;
+let levelUp;
+let footsteps;
 
 const distortion = new Tone.Distortion(0.8).toDestination();
 const reverb = new Tone.Reverb(1.5).toDestination();
@@ -105,27 +102,20 @@ const reverb = new Tone.Reverb(1.5).toDestination();
 let durationS = .22;
 let curSound, gamesynth;
 let index = 0;
-// let bugSeq =  new Tone.Sequence((time, note) => {
-//   index++;
-//   gamesynth.triggerAttackRelease(note, ".1", time);
-//   if(index>=bugSound.length){
-//     index=0;
-//     bugSeq.stop();
-//   }
-// }, bugSound, ".1");
 
 const playNotes = () => {
   // schedule the notes to be played
-
-  let index = 0;
-  curSound = titleScreenNotes;
-  Tone.Transport.scheduleRepeat((time) => {
-    if(gameOver) { curSound = titleScreenNotes; }
-    else curSound = notes;
-    let note = curSound[index];
-    synth.triggerAttackRelease(note, durationS, time);
-    index = (index + 1) % curSound.length;
-  },durationS);
+  
+    let index = 0;
+    curSound = titleScreenNotes;
+    Tone.Transport.scheduleRepeat((time) => {
+      if(gameOver) { curSound = titleScreenNotes; }
+      else curSound = notes;
+      let note = curSound[index];
+      synth.triggerAttackRelease(note, durationS, time);
+      index = (index + 1) % curSound.length;
+    },durationS);
+  
 }
 
 // set the tempo and start the transport
@@ -143,28 +133,30 @@ function preload() {
   }).toDestination();
   synth.volume.value=-3;
 
-  gamesynth = new Tone.Synth({
-    oscillator: {
-      type: "sine"
-    },
-    envelope: {
-      attack: .9,
-		decay: .9,
-		sustain: 0.5,
-		release: 0.3,
-    }
-  }).chain(distortion, reverb);
-  charactersheet = loadImage('dog.png');  
+  // gamesynth  = new Tone.Synth().toDestination();
+  
+  // sequence = new Tone.Sequence((time, note) => {
+  //   gamesynth.triggerAttackRelease(note, "8n", time);
+  // }, walkNotes);
+  
 
-  //if(soundsOn) playNotes();
+  charactersheet = loadImage('dog.png');  
+  
+  gameOverSound = new Tone.Player("level.mp3").toDestination();
+  gameOverSound.volume.value = 13;
+  levelUp = new Tone.Player("nextLevel.mp3").toDestination();
+  levelUp.volume.value = 5;
+  footsteps = new Tone.Player("footsteps.mp3").toDestination();
+  footsteps.loop = true;
+  footsteps.volume.value = 15;
+  footsteps.playbackRate = 1.2;
+
 }
 
 //converts images to animation
 function setup() {
   
   createCanvas(1023/2, 1023/2-20);
-  //background("lightgray");
-  //background("gray")
   
   if ("serial" in navigator) {
     textAlign(CENTER,CENTER);
@@ -184,8 +176,10 @@ function setup() {
   }
   
   character = new Sprite();
- 
-  //playNotes();
+  Tone.Transport.start();
+  
+  Tone.start();
+  playNotes();
   let colorIndex = int(random(colorList.length));
   roundColor = colorList[colorIndex];
 
@@ -204,17 +198,18 @@ function setup() {
 }
 
 function startSound(){
-  Tone.Transport.start();
-  Tone.start(); 
   soundsOn = !soundsOn;
-  console.log("Sound: "+soundsOn);
+  if(soundsOn){
+    Tone.Transport.start();
+    Tone.start(); 
+  }else{
+    Tone.Transport.stop();
+  }
+
 }
 
 
-//setInterval(changeBackgroundColor, 1000);
-function draw() {
-  
-
+function draw() {  
   if(reader){
     if(isPressedButton==0&&!isPressed){
       buttonPressed();
@@ -226,11 +221,8 @@ function draw() {
       score = 0;
       gameOver = false;
       roundOver = false;
-      //buttonPressed();
       isPressed = true;
-      //console.log("Start")
     }else if(!isPressed&&keyIsDown(ENTER)){
-      //console.log("press"+timer+isPressed);
       isPressed = true;
       roundOver = true;
     }else if(!keyIsDown(ENTER)){
@@ -246,15 +238,11 @@ function draw() {
   
   textFont('cursive');
   
-  
   if(!gameOver){
     
     background("lightgray");
     if(writer&&frameCount%5==0){
-      //writer.write(encoder.encode(roundColor[0]+","+roundColor[1]+","+roundColor[2]+"\n"));
-      //console.log(encoder.encode(roundColor[0]+","+roundColor[1]+","+roundColor[2]+"\n"));
       writer.write(encoder.encode(ledColorSwap()+"\n"));
-      //console.log(roundColor);
     }
     for(let tileC of map){
       tileC.show();
@@ -263,22 +251,9 @@ function draw() {
     if(reader){
       joystick();
     }else{
-    if(keyIsDown(RIGHT_ARROW)){
-      character.walk(2,0);
-      character.show(rAni);
-    }else if(keyIsDown(LEFT_ARROW)){
-     character.walk(-2,0);
-     character.show(lAni);
-    }else if(keyIsDown(UP_ARROW)){
-      character.walk(0,-2);
-      character.show(uAni);
-    }else if(keyIsDown(DOWN_ARROW)){
-      character.walk(0,2);
-      character.show(dAni);
-    } else{
-      character.dogSit();
+      arrows();
     }
-    }
+
     fill("white")
     rect(0, 0, width-1, 45);
     fill("black");
@@ -298,7 +273,8 @@ function draw() {
     textAlign(LEFT)
     text('Time: '+timer, 10, 30);
    
-    if(roundOver){
+    //if round is forced over by pressing or enter this will check score
+    if(roundOver || timer <= 0){
       if(mapColor[character.spritePos()]==roundColor){
         resetRound();
         score++;
@@ -307,28 +283,24 @@ function draw() {
         gameOver=true;
       }      
     }
-    if (timer <= 0 || gameOver) {
-      if(mapColor[character.spritePos()]==roundColor){
-        resetRound();
-        score++;
-        if(soundsOn) levelUp.start();
-      }else{
-        gameOver=true;
-        gamesPlayed++;
-        resetRound();
-        changeBackgroundColor();
-        if(soundsOn) gameOverSound.start(); 
-      }
-        
-      }          
-    
+    //runs once at the end of every game
+    if (gameOver) {
+      gameOver=true;
+      gamesPlayed++;
+      resetRound();
+      changeBackgroundColor();
+      if(soundsOn) gameOverSound.start(); 
+    }
+             
+    //updates time
     if (round((millis()-gameDelay)/1000) == mainTime-timer+1 && timer>=0) {
       timer--;
-            //synth.envelope.attack -= .01;
-
+     
+      //synth.envelope.attack -= .01;
+      Tone.Transport.bpm.value = Tone.Transport.bpm.value + 1;
     }
   }else{
-    
+    Tone.Transport.bpm.value = 90;
     if(frameCount%60==0) changeBackgroundColor();
     fill("lightgray")
     rect(width/8, height/4, width*3/4, height/2);
@@ -377,67 +349,109 @@ function draw() {
   }
 }
 
-//adds to total for mouse is clicked to modify accuracy score
+//added to mimic enter key being pressed
 function buttonPressed() {
   if(gameOver&&!isPressed){
     score = 0;
     gameOver = false;
     roundOver = false;
-    //buttonPressed();
     isPressed = true;
-    //console.log("Start")
   }else if(!isPressed){
-    //console.log("press"+timer+isPressed);
     isPressed = true;
     roundOver = true;
   }
 }
+
 function joystick(){
   if(xValue>520&&((yValue<500&&xValue<yValue)||(yValue>520&&xValue>yValue)||(yValue>500&&yValue<520))){
     character.walk(2,0);
     character.show(rAni);
+    startWalking()
   }else if(xValue<500&&((yValue<500&&xValue<yValue)||(yValue>520&&xValue>yValue)||(yValue>500&&yValue<520))){
    character.walk(-2,0);
    character.show(lAni);
+   startWalking()
   }else if(yValue<500){
     character.walk(0,-2);
     character.show(uAni);
+    startWalking()
   }else if(yValue>520){
     character.walk(0,2);
     character.show(dAni);
+    startWalking()
   } else{
     character.dogSit();
+    footsteps.stop();
+    isWalking = false;
   }
+  if(!isWalking){
+    footsteps.start();
+  }
+}
+
+function arrows(){
+  if(keyIsDown(RIGHT_ARROW)){
+    character.walk(2,0);
+    character.show(rAni);
+    startWalking()
+  }else if(keyIsDown(LEFT_ARROW)){
+    character.walk(-2,0);
+    character.show(lAni);
+    startWalking()
+  }else if(keyIsDown(UP_ARROW)){
+    character.walk(0,-2);
+    character.show(uAni);
+    startWalking()
+  }else if(keyIsDown(DOWN_ARROW)){
+    character.walk(0,2);
+    character.show(dAni);
+    startWalking()
+  } else{
+    character.dogSit();
+    footsteps.stop();
+    isWalking = false;
+  }
+  
 }
 
 function changeBackgroundColor() {
   background(random(150)+100,random(150)+100,random(150)+100);
 }
 
+//resets the round
 function resetRound(){
+  //footsteps.start();
+  //blinks the light if the serial is connected
   if(writer){
-    writer.write(encoder.encode(0+","+0+","+0+"\n"));
-    
+    writer.write(encoder.encode(0+","+0+","+0+"\n")); 
   }
 
-  newLevel();
-  gameDelay = millis();
+  //adds time to the clock depending on if it is joystick vs arrows
   if(!reader){
     timer+=2;
   }else{
     timer += 5;
   }
+
+  newLevel();
+  gameDelay = millis();
   mainTime = timer;
   drawMap();
   roundOver=false;
-  let colorIndex = int(random(colorList.length));
-
   
-  roundColor = colorList[colorIndex];
-  //ledRoundColor = ledColorList[colorIndex];
-  //console.log(roundColor+":"+ledRoundColor);
+  roundColor = colorList[int(random(colorList.length))];
 }
 
+function startWalking() {
+  if(!isWalking){
+    if(soundsOn) footsteps.start();
+  }
+  isWalking=true;
+}
+function stopWalking() {
+  sequence.stop();
+}
+//certain colors need different rgb values to display well on the led
 function ledColorSwap(){
   let colorValue = roundColor;
   switch(roundColor){
@@ -446,18 +460,17 @@ function ledColorSwap(){
     case yellowC: colorValue = yellowLED; break;
   }
   return colorValue;
-
-
 }
 
+//reorders the map layout
 function newLevel(){
-
   mapColor = [];
   for(let i=0;i<7;i++){
     mapColor = mapColor.concat(colorList.sort(() => random() - 0.5));
   }
 }
 
+//iterates through the mapColor list and displays all the tiles 
 function drawMap(){
   let index=0;
   for(let i=0;i<7;i++){
@@ -465,7 +478,6 @@ function drawMap(){
       let size = width/8-5;
       map.push(new Tile(mapColor[index],size,j*size+4*j+5,i*size+4*i+50))
       index++;
-      //console.log(map);
     }
   
   }
