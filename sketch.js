@@ -16,7 +16,7 @@ let xValue = 00;
 let yValue = 00;
 let isPressedButton = 1;
 let isPressed = false;
-
+let mode;
 let redC = [250,0,0];
 let orangeC = [255,140,0];
 let yellowC = [255,255,0];
@@ -206,6 +206,11 @@ function setup() {
   characterSelect.option("MulticolorDog");
   characterSelect.option("OrangeCat");
   characterSelect.selected("BlondeDog");
+  mode = createSelect();
+  mode.position(width*3/4, height+12);
+  mode.option(1);
+  mode.option(2);
+  mode.option(3);
 }
 
 function createCharacter(sheet){
@@ -316,6 +321,7 @@ function draw() {
         if(soundsOn) levelUp.start();
       }else{
         gameOver=true;
+        footsteps.stop();
       }      
     }
     //runs once at the end of every game
@@ -346,6 +352,8 @@ function draw() {
     textSize(35);
     text("Hue Hunt", width/2, height/3);
     //resets variables
+    isWalking = false;
+    
     gameDelay = millis();
     Tone.Transport.bpm.value = 90;
     timer = startTime;
@@ -418,16 +426,13 @@ function joystick(){
     footsteps.stop();
     isWalking = false;
   }
-  if(!isWalking){
-    footsteps.start();
-  }
 }
 
 function arrows(){
   if(keyIsDown(RIGHT_ARROW)){
     character.walk(2,0);
     character.show(3);
-    startWalking()
+    startWalking();
   }else if(keyIsDown(LEFT_ARROW)){
     character.walk(-2,0);
     character.show(2);
@@ -460,10 +465,10 @@ function resetRound(){
   }
 
   //adds time to the clock depending on if it is joystick vs arrows
-  if(!reader){
-    timer+=2;
+  if(reader){
+    timer+= 6/mode.value();
   }else{
-    timer += 5;
+    timer += 7-mode.value()*2;
   }
 
   newLevel();
@@ -495,14 +500,6 @@ function ledColorSwap(){
   return colorValue;
 }
 
-function characterReturn(){
-  switch(characterSelect.value){
-    case 'Bonde Dog': character = characterList[1]; break;
-    case pinkC: colorValue = pinkLED; break;
-    case yellowC: colorValue = yellowLED; break;
-  }
-  return colorValue;
-}
 //reorders the map layout
 function newLevel(){
   mapColor = [];
