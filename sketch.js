@@ -54,7 +54,7 @@ let score = 0;
 let highScore = score;
 let gamesPlayed = 0;
 
-let soundsOn = true;
+let soundsOn = false;
 let dAni = [];
 let rAni = [];
 let lAni = []; 
