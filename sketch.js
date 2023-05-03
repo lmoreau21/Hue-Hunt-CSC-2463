@@ -99,6 +99,12 @@ const characterSet = new Map([
   ["OrangeCat", 5]
 ]);
 
+const levelMode = new Map([
+  ['Easy',1],
+  ['Medium',2],
+  ['Hard',3],
+]);
+
 let spriteX;
 let spriteY;
 //audio files defined in the preload
@@ -127,7 +133,8 @@ const playNotes = () => {
       if(gameOver) { curSound = titleScreenNotes; }
       else curSound = notes;
       let note = curSound[index];
-      synth.triggerAttackRelease(note, durationS, time);
+      if(soundsOn&&!gameOver) synth.triggerAttackRelease(note, durationS, time);
+      if(soundsOn&&gameOver) synthMainMenu.triggerAttackRelease(note, durationS, time);
       index = (index + 1) % curSound.length;
     },durationS);
   
@@ -136,26 +143,50 @@ const playNotes = () => {
 // set the tempo and start the transport
 function preload() {
   synth = new Tone.Synth({
+    harmonicity:5,
+    modulationIndex: 10,
     oscillator:{
       type:'triangle'
     },
     envelope: { 
-      attack: 0.4,
+      attack: 0.01,
+        decay: 2,
+        sustain: 1,
+        release: 2
+    },
+  }).toDestination();
+  synthMainMenu = new Tone.FMSynth({
+    harmonicity:5,
+    modulationIndex: 10,
+    oscillator: {
+        type:"sine"
+    },
+    envelope: {
+        attack: 0.001,
+        decay: 2,
+        sustain: 0.1,
+        release: 2
+    },
+    modulation : {
+        type:"square"
+    },
+    modulationEnvelope : {
+      attack: 0.002,
       decay: 0.2,
-      sustain: .21,
-      release: 14
+      sustain: 0,
+      release: 0.2
     }
   }).toDestination();
-  synth.volume.value=-3;
+  
   charactersheets = [loadImage('blondedog.png'),loadImage('browndog.png'),loadImage('goldcat.png'),loadImage('graycat.png'),loadImage('multdog.png'),loadImage('orangecat.png')];  
   
   gameOverSound = new Tone.Player("level.mp3").toDestination();
-  gameOverSound.volume.value = 13;
+  gameOverSound.volume.value = 8;
   levelUp = new Tone.Player("nextLevel.mp3").toDestination();
   levelUp.volume.value = 5;
   footsteps = new Tone.Player("footsteps.mp3").toDestination();
   footsteps.loop = true;
-  footsteps.volume.value = 15;
+  footsteps.volume.value = 10;
   footsteps.playbackRate = 1.2;
 
 }
@@ -178,7 +209,6 @@ function setup() {
   character = characterList[1];
 
   Tone.Transport.start();
-  
   Tone.start();
   playNotes();
   let colorIndex = int(random(colorList.length));
@@ -207,10 +237,10 @@ function setup() {
   characterSelect.option("OrangeCat");
   characterSelect.selected("BlondeDog");
   mode = createSelect();
-  mode.position(width*3/4, height+12);
-  mode.option(1);
-  mode.option(2);
-  mode.option(3);
+  mode.position(width*2/3, height+12);
+  mode.option("Easy");
+  mode.option("Medium");
+  mode.option("Hard");
 }
 
 function createCharacter(sheet){
@@ -338,7 +368,7 @@ function draw() {
       timer--;
      
       //synth.envelope.attack -= .01;
-      Tone.Transport.bpm.value = Tone.Transport.bpm.value + 1;
+      Tone.Transport.bpm.value = Tone.Transport.bpm.value + .1;
     }
   //game over/menu screen
   }else{
@@ -466,9 +496,9 @@ function resetRound(){
 
   //adds time to the clock depending on if it is joystick vs arrows
   if(reader){
-    timer+= 6/mode.value();
+    timer+= 6/levelMode.get(mode.value());
   }else{
-    timer += 7-mode.value()*2;
+    timer += 7-levelMode.get(mode.value())*2;
   }
 
   newLevel();
