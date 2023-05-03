@@ -351,7 +351,7 @@ function draw() {
         if(soundsOn) levelUp.start();
       }else{
         gameOver=true;
-        footsteps.stop();
+        if(soundsOn) footsteps.stop();
       }      
     }
     //runs once at the end of every game
