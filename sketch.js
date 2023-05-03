@@ -566,8 +566,8 @@ async function serialRead() {
 }
 async function popUp(){
   window.alert("Rules: \nMove the sprite by using either the joystick or the arrow keys to a tile matching the color on the top of the screen or the rgb light."
-          +"\nOnce the character is standing on the correct tile press enter or press down on the joystick."+
-          "\n2 seconds will be added to the timer and the game continues until the timer reaches zero");
+          +"\nOnce the character is standing on the correct tile press enter or press down on the joystick (if the clock is at zero and you are standing on the correct tile it is also correct)"+
+          "\ntime will be added to the timer (based on difficulty) and the game continues until the timer reaches zero");
 }
 
 async function connect() {
