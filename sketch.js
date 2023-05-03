@@ -263,6 +263,8 @@ function createCharacter(sheet){
 //togles sound
 function startSound(){
   soundsOn = !soundsOn;
+  Tone.Transport.start();
+    Tone.start(); 
   if(soundsOn){
     Tone.Transport.start();
     Tone.start(); 
