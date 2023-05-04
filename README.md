@@ -2,7 +2,7 @@
 ## Final Integration Project for LSU CSC 2463
 
 ### Project Description
-Hue Hunt is a game where you have to navigate your character to the correct tile as fast as possible. It is an endless game comprised of a randomly generated map every single round. There is also 3 modes: easy, medium, and hard. You can also change your sprite using a drop down list.
+Hue Hunt is a game where you have to navigate your character to the correct tile as fast as possible. It is an endless game comprised of a randomly generated map every single round. There is also 3 modes: easy, medium, and hard. You can also change your sprite using a drop down list. The game has a start screen, in-game screen, and a game over screen. There is a main menu and in-game background noise as well as footsteps, game over, and new round nosie.
 
 #### Tech Stack
 * JavaScript (P5.js & Tone.js)
@@ -39,17 +39,36 @@ Hue Hunt is a game where you have to navigate your character to the correct tile
 * If the clock reaches 0 and you are on the correct tile time is still added
 * If you are on the inccorect tile when the clock reaches 0 or when you press enter, the game will end
 
+#### Guide to Program
+* index.html
+  * adds the p5.js, tone.js, and the js scripts
+  * allows for github page
+* sketch.js
+  * controls major game functionality
+* sprite.js 
+ * creates all character types
+ * defines walking movement and sitting
+* tiles.js
+  * creates map tiles as objects
+  * has show() function that draws sqare tile
+
 ##### Future Development
 * Add powerups that may...
   * add time
-  * change sprite speed
+  * change character speed
   * change tile size
-  * add a life
+  * change number of tiles
+  * remove a color option
+  * add an extra life
+  * mystery power
 * Add blank tiles you can't walk on to make movement harder
 * Add an enemey that you can't touch but constantly follows you
+* Move diagonally
+* Pause mid game
+* Make it multiplayer and whoever lasts longer
 
 Project Link: https://lmoreau21.github.io/Hue-Hunt-CSC-2463/
-Youtube Video of Project: 
+Youtube Video of Project: tba
 
 #### Image of Actual Ardunio Setup
 ![IMG-6877](https://user-images.githubusercontent.com/61840342/236071054-3008d392-6351-4f37-9929-35253adfb7dc.jpg)
