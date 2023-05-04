@@ -112,9 +112,6 @@ let gameOverSound;
 let levelUp;
 let footsteps;
 
-const distortion = new Tone.Distortion(0.8).toDestination();
-const reverb = new Tone.Reverb(1.5).toDestination();
-
 // define the duration for each note
 let durationS = .22;
 let curSound, gamesynth;
@@ -182,7 +179,7 @@ function preload() {
   
   gameOverSound = new Tone.Player("sounds/level.mp3").toDestination();
   gameOverSound.volume.value = 8;
-  levelUp = new Tone.Player("sounds/nextlevel.mp3").toDestination();
+  levelUp = new Tone.Player("sounds/sucsess.mp3").toDestination();
   levelUp.volume.value = 5;
   footsteps = new Tone.Player("sounds/footsteps.mp3").toDestination();
   footsteps.loop = true;
