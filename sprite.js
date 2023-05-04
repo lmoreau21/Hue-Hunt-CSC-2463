@@ -41,7 +41,7 @@ class Sprite {
     
   }
 
-  dogSit(){
+  spriteSit(){
     let index = floor(this.index) % this.len;
     this.index += this.speed;
     if(index == 3){

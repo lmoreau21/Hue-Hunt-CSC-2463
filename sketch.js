@@ -5,7 +5,7 @@
 * the timer starts at 10 seconds
 * move the sprite using arrows or jostick to control the dog
 * once you reach the color on the top of the screen or the rgb press enter or joystick
-* this will add 2 seconds (arrows) or 5 seconds (joystick) to the timer
+* this will add a couple seconds to the timer
 * run to and select as many tiles as you can before the time reaches 0
 */
 let port;
@@ -178,13 +178,13 @@ function preload() {
     }
   }).toDestination();
   
-  charactersheets = [loadImage('blondedog.png'),loadImage('browndog.png'),loadImage('goldcat.png'),loadImage('graycat.png'),loadImage('multdog.png'),loadImage('orangecat.png')];  
+  charactersheets = [loadImage('characters/blondedog.png'),loadImage('characters/browndog.png'),loadImage('characters/goldcat.png'),loadImage('characters/graycat.png'),loadImage('characters/multdog.png'),loadImage('characters/orangecat.png')];  
   
-  gameOverSound = new Tone.Player("level.mp3").toDestination();
+  gameOverSound = new Tone.Player("sounds/level.mp3").toDestination();
   gameOverSound.volume.value = 8;
-  levelUp = new Tone.Player("nextLevel.mp3").toDestination();
+  levelUp = new Tone.Player("sounds/nextLevel.mp3").toDestination();
   levelUp.volume.value = 5;
-  footsteps = new Tone.Player("footsteps.mp3").toDestination();
+  footsteps = new Tone.Player("sounds/footsteps.mp3").toDestination();
   footsteps.loop = true;
   footsteps.volume.value = 10;
   footsteps.playbackRate = 1.2;
@@ -208,8 +208,7 @@ function setup() {
     createCharacter(sheet);
   character = characterList[1];
 
-  Tone.Transport.start();
-  Tone.start();
+  
   playNotes();
   let colorIndex = int(random(colorList.length));
   roundColor = colorList[colorIndex];
@@ -241,6 +240,8 @@ function setup() {
   mode.option("Easy");
   mode.option("Medium");
   mode.option("Hard");
+  Tone.Transport.start();
+  Tone.start();
 }
 
 function createCharacter(sheet){
@@ -454,7 +455,7 @@ function joystick(){
     character.show(1);
     startWalking()
   } else{
-    character.dogSit();
+    character.spriteSit();
     footsteps.stop();
     isWalking = false;
   }
@@ -478,7 +479,7 @@ function arrows(){
     character.show(1);
     startWalking()
   } else{
-    character.dogSit();
+    character.spriteSit();
     footsteps.stop();
     isWalking = false;
   }
@@ -498,7 +499,7 @@ function resetRound(){
 
   //adds time to the clock depending on if it is joystick vs arrows
   if(reader){
-    timer+= 6/levelMode.get(mode.value());
+    timer+= 8-levelMode.get(mode.value())*2;
   }else{
     timer += 7-levelMode.get(mode.value())*2;
   }
