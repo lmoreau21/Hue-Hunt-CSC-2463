@@ -109,7 +109,7 @@ let spriteX;
 let spriteY;
 //audio files defined in the preload
 let gameOverSound;
-let levelUp;
+let levelUpSound;
 let footsteps;
 
 // define the duration for each note
@@ -179,8 +179,8 @@ function preload() {
   
   gameOverSound = new Tone.Player("sounds/level.mp3").toDestination();
   gameOverSound.volume.value = 8;
-  levelUp = new Tone.Player("sounds/sucsess.mp3").toDestination();
-  levelUp.volume.value = 5;
+  levelUpSound = new Tone.Player("sounds/success.mp3").toDestination();
+  levelUpSound.volume.value = 5;
   footsteps = new Tone.Player("sounds/footsteps.mp3").toDestination();
   footsteps.loop = true;
   footsteps.volume.value = 10;
@@ -348,7 +348,7 @@ function draw() {
       if(mapColor[character.spritePos()]==roundColor){
         resetRound();
         score++;
-        if(soundsOn) levelUp.start();
+        if(soundsOn) levelUpSound.start();
       }else{
         gameOver=true;
         if(soundsOn) footsteps.stop();
