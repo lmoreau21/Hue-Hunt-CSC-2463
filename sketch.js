@@ -182,7 +182,7 @@ function preload() {
   
   gameOverSound = new Tone.Player("sounds/level.mp3").toDestination();
   gameOverSound.volume.value = 8;
-  levelUp = new Tone.Player("sounds/nextLevel.mp3").toDestination();
+  levelUp = new Tone.Player("sounds/nextlevel.mp3").toDestination();
   levelUp.volume.value = 5;
   footsteps = new Tone.Player("sounds/footsteps.mp3").toDestination();
   footsteps.loop = true;
