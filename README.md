@@ -67,8 +67,8 @@ Hue Hunt is a game where you have to navigate your character to the correct tile
 * Pause mid game
 * Make it multiplayer and whoever lasts longer
 
-Project Link: https://lmoreau21.github.io/Hue-Hunt-CSC-2463/
-Youtube Video of Project: tba
+#### Project Link: https://lmoreau21.github.io/Hue-Hunt-CSC-2463/
+#### Youtube Video of Project: https://youtu.be/BY6RPvsbKjA
 
 #### Image of Actual Ardunio Setup
 ![IMG-6877](https://user-images.githubusercontent.com/61840342/236071054-3008d392-6351-4f37-9929-35253adfb7dc.jpg)
